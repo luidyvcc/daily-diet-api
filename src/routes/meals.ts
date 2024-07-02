@@ -61,13 +61,11 @@ export const mealsRoutes = async (app: FastifyInstance) => {
     const { name, description, date, isDiet } = updateMealBodySchema.parse(
       request.body,
     )
-    console.log('\n\n asdf')
 
     const userId = request.cookies.userId
     if (!userId) return reply.status(401).send({ message: 'Unauthorized' })
 
     const { mealId } = mealIdParamSchema.parse(request.params)
-    console.log('\n\n mealId: ', mealId)
 
     const [updatedMeal] = await knex('meal')
       .where({ id: mealId, user_id: userId })
