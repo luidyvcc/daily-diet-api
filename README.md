@@ -4,8 +4,7 @@ API desenvolvida para servir o frontend do app Daily Diet.
 
 Daily Diet é uma aplicação mobile para controle da sua dieta. Nele você pode registrar suas refeições e acompanhar como está seu progresso.
 
-Link para o layout da aplicação (Daily Diet) que utilizaria essa API.
-https://www.figma.com/design/ZRqCNWJXeH2FB9QKjgsqW8/Daily-Diet-%E2%80%A2-Desafio-React-Native-(Community)?node-id=0-1&t=iWABDpK6Hj5p2Vzw-0
+[Link para o layout da aplicação (Daily Diet) que utilizaria essa API.](<https://www.figma.com/design/ZRqCNWJXeH2FB9QKjgsqW8/Daily-Diet-%E2%80%A2-Desafio-React-Native-(Community)?node-id=0-1&t=iWABDpK6Hj5p2Vzw-0>)
 
 ### Regras da aplicação
 
@@ -28,4 +27,72 @@ https://www.figma.com/design/ZRqCNWJXeH2FB9QKjgsqW8/Daily-Diet-%E2%80%A2-Desafio
   - Melhor sequência de refeições dentro da dieta
 - [x] O usuário só pode visualizar, editar e apagar as refeições o qual ele criou
 
-###
+### Rotas
+
+#### Users
+
+> ##### Create
+>
+> Method: POST
+> URL: {{BASE_URL}}/users/register
+> Request Body:
+>
+> ```
+> {
+>    "name": "John Doe",
+>    "email": "john@doe.com"
+> }
+> ```
+
+#### Meals
+
+> ##### Create
+>
+> Método: POST
+> URL: /meals
+> Request Body:
+>
+> ```
+> {
+>  "name": "Lunch",
+>  "description": "Rice, beans, stewed meat, and salad",
+>  "date": "2024-07-01T23:39:21.476Z",
+>  "isDiet": true
+> }
+> ```
+
+> ##### Fetch All
+>
+> Method: GET
+> URL: /meals
+> Request Body: None
+
+> ##### Fetch One Meal
+>
+> Method: GET
+> URL: /meals/{mealId}
+> Request Body: None
+
+> ##### Metrics
+>
+> Method: GET
+> URL: /meals
+> Request Body: None
+
+> ##### Update
+>
+> Method: PATCH
+> URL: /meals/{mealId}
+> Request Body:
+>
+> ```
+> {
+>    "description": "Rice, beans, grilled chicken fillet, and salad"
+> }
+> ```
+
+> ##### Delete
+>
+> Method: DELETE
+> URL: /meals/{mealId}
+> Request Body: None
