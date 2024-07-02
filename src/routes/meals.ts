@@ -45,27 +45,45 @@ export const mealsRoutes = async (app: FastifyInstance) => {
     return reply.status(200).send(meals)
   })
 
+  // Read (one)
+  app.get('/:mealId', async (request, reply) => {
+    const userId = request.cookies.userId
+    if (!userId) return reply.status(401).send({ message: 'Unauthorized' })
+
+    const paramsSchema = z.object({
+      mealId: z.string().uuid(),
+    })
+
+    const { mealId } = paramsSchema.parse(request.params)
+
+    const meal = await knex('meal')
+      .where({ id: mealId, user_id: userId })
+      .first()
+
+    if (!meal) return reply.status(404).send({ message: 'Meal not found' })
+
+    return reply.status(200).send(meal)
+  })
+
   // Update
   app.patch('/:mealId', async (request, reply) => {
-    console.log('\n\n request.body: ', request.body)
+    const userId = request.cookies.userId
+    if (!userId) return reply.status(401).send({ message: 'Unauthorized' })
+
     const updateMealBodySchema = z.object({
       name: z.string().min(3).max(255).optional(),
       description: z.string().min(3).max(255).optional(),
       date: z.string().datetime().optional(),
       isDiet: z.boolean().optional(),
     })
-    const mealIdParamSchema = z.object({
+    const paramsSchema = z.object({
       mealId: z.string().uuid(),
     })
 
     const { name, description, date, isDiet } = updateMealBodySchema.parse(
       request.body,
     )
-
-    const userId = request.cookies.userId
-    if (!userId) return reply.status(401).send({ message: 'Unauthorized' })
-
-    const { mealId } = mealIdParamSchema.parse(request.params)
+    const { mealId } = paramsSchema.parse(request.params)
 
     const [updatedMeal] = await knex('meal')
       .where({ id: mealId, user_id: userId })
@@ -81,5 +99,68 @@ export const mealsRoutes = async (app: FastifyInstance) => {
       return reply.status(404).send({ message: 'Meal not found' })
 
     return reply.status(200).send(updatedMeal)
+  })
+
+  // Delete
+  app.delete('/:mealId', async (request, reply) => {
+    const userId = request.cookies.userId
+    if (!userId) return reply.status(401).send({ message: 'Unauthorized' })
+
+    const paramsSchema = z.object({
+      mealId: z.string().uuid(),
+    })
+
+    const { mealId } = paramsSchema.parse(request.params)
+
+    await knex('meal')
+      .where({ id: mealId, user_id: userId })
+      .delete()
+      .then(() => {
+        reply.status(200)
+      })
+      .catch(() => {
+        reply.status(404).send({ message: 'Meal not found' })
+      })
+
+    return null
+  })
+
+  // Get Metrics
+  // Deve ser possível recuperar as métricas de um usuário
+  // - Quantidade total de refeições registradas
+  // - Quantidade total de refeições dentro da dieta
+  // - Quantidade total de refeições fora da dieta
+  // - Melhor sequência de refeições dentro da dieta
+  app.get('/metrics', async (request, reply) => {
+    const userId = request.cookies.userId
+    if (!userId) return reply.status(401).send({ message: 'Unauthorized' })
+
+    const meals = await knex('meal').where({ user_id: userId })
+
+    const totalMeals = meals.length
+    const dietMeals = meals.filter((meal) => meal.is_diet)
+    const totalDietMeals = dietMeals.length
+    const totalNotDietMeals = meals.filter((meal) => !meal.is_diet).length
+
+    const { bestSequence: bestDietSequence } = dietMeals.reduce(
+      (acc, meal) => {
+        if (meal.is_diet) {
+          acc.currentSequence += 1
+          acc.bestSequence = Math.max(acc.bestSequence, acc.currentSequence)
+        } else {
+          acc.currentSequence = 0
+        }
+
+        return acc
+      },
+      { bestSequence: 0, currentSequence: 0 },
+    )
+
+    return reply.status(200).send({
+      totalMeals,
+      totalDietMeals,
+      totalNotDietMeals,
+      bestDietSequence,
+    })
   })
 }
